@@ -2,6 +2,8 @@ use std::time::Instant;
 use tui::style::Color;
 use tui::style::Style;
 use tui::text::Span;
+
+static mut LAST_LEN: usize = 0;
 #[derive(Debug, Clone)]
 pub struct App {
     pub text: String,
@@ -28,10 +30,24 @@ impl App {
         }
     }
 
-    pub fn get_spans<'a>(&'a self, txt: &'a str) -> Vec<Span> {
+    pub fn get_spans<'a>(&self, txt: &'a str) -> Vec<Span<'a>> {
         if txt.len() == 0 {
             return Vec::<Span>::new();
         }
+
+        /*
+        let iter = unsafe {
+            if LAST_LEN < txt.chars().count() {
+                txt.char_indices().skip(LAST_LEN).enumerate()
+            } else {
+                txt.char_indices().skip(0).enumerate()
+            }
+        };
+        */
+        unsafe {
+            LAST_LEN = txt.chars().count();
+        }
+
         fn style_span<'a>(txt: &'a str, clr: bool) -> Span {
             Span::styled(
                 txt,

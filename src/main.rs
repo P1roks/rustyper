@@ -76,7 +76,7 @@ fn run_app<B: Backend>(term: &mut Terminal<B>) -> Result<(), Box<dyn Error>> {
             }
         } else {
             if let Event::Key(key) = event::read()? {
-                if let KeyCode::Esc = key.code {
+                if let KeyCode::Esc | KeyCode::Char('q') = key.code {
                     return Ok(());
                 }
             }

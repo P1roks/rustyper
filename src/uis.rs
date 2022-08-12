@@ -7,7 +7,7 @@ use tui::{
     widgets::{Block, Borders, Clear, Gauge, Paragraph, Wrap},
     Frame,
 };
-pub fn render_ui<B: Backend>(f: &mut Frame<B>, msg: &App) {
+pub fn render_ui<'a, B: Backend>(f: &mut Frame<B>, msg: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(2)
@@ -38,7 +38,16 @@ pub fn render_ui<B: Backend>(f: &mut Frame<B>, msg: &App) {
 
     f.render_widget(progress, chunks[0]);
 
-    let msng_text = Span::styled(text, Style::default().add_modifier(Modifier::DIM));
+    let first_chr_idx = text.char_indices().nth(1).unwrap_or((0, ' ')).0;
+    let msng_text = Span::styled(
+        &text[first_chr_idx..],
+        Style::default().add_modifier(Modifier::DIM),
+    );
+    let cursor_chr = Span::styled(
+        &text[0..first_chr_idx],
+        Style::default().fg(Color::Black).bg(Color::Gray),
+    );
+    all_txt.push(cursor_chr);
     all_txt.push(msng_text);
     let msg_box = Paragraph::new(Spans::from(all_txt))
         .block(Block::default().title("MSG").borders(Borders::ALL))
@@ -80,7 +89,7 @@ pub fn popup_result<'a>(msg: &'a App, size: &Rect) -> (Paragraph<'a>, Rect) {
                 ((total_chrs as u16 - msg.mistakes) * 100) as f32 / total_chrs as f32
             }
         ))),
-        Spans::from(Span::raw(format!("Total characters typed: {}", msg.typed))),
+        Spans::from(Span::raw(format!("Total typed: {}", msg.typed))),
     ];
     let block = Paragraph::new(stats).block(Block::default().title("Result").borders(Borders::ALL));
     let area = centered_rect(20, 40, *size);
